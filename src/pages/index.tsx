@@ -4,6 +4,7 @@ import { Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import useDetectUserLocale from "@app/hooks/useUserLocale";
 import getTimeFormat from "@app/utils/getTimeFormat";
+import Button from "@app/components/Button";
 
 Chart.register(...registerables);
 
@@ -125,7 +126,7 @@ export default function Home() {
 					</div>
 				</>
 			)}
-			<button onClick={handleNewDataRequest}>add new data</button>
+			<Button onClick={handleNewDataRequest}>add new data</Button>
 		</>
 	);
 }
