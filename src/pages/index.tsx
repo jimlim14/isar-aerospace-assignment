@@ -1,34 +1,131 @@
-import Image from "next/image";
-import styles from "@/styles/Home.module.css";
 import { useEffect, useState } from "react";
+import { SpectrumStatus } from "@app/types/types";
+import { Line } from "react-chartjs-2";
+import { Chart, registerables } from "chart.js";
+import useDetectUserLocale from "@app/hooks/useUserLocale";
+import getTimeFormat from "@app/utils/getTimeFormat";
+
+Chart.register(...registerables);
 
 export default function Home() {
-	const [spectrumStatus, setSpectrumStatus] = useState<>(null);
-  const [actionRequired, setActionRequired] = useState(false);
+	const userLocale = useDetectUserLocale();
+	const [spectrumStatus, setSpectrumStatus] = useState<SpectrumStatus[]>([]);
 
 	useEffect(() => {
-		fetch("/api/SpectrumStatus")
-			.then((res) => res.json())
-			.then((data) => setSpectrumStatus(data))
-			.catch((e) => console.log(e));
+		const fetchData = async () => {
+			const spectrumData = await fetchSpectrumStatus();
+			setSpectrumStatus(() => [
+				{
+					...spectrumData,
+					date: getTimeFormat(userLocale),
+				},
+			]);
+		};
+
+		fetchData();
 	}, []);
 
-  // useEffect(() => {
-	// 	webSocketService.connect(
-	// 		"wss://webfrontendassignment-isaraerospace.azurewebsites.net/api/SpectrumWS",
-	// 		(data) => {
-	// 			setSpectrumStatus(data);
-	// 		},
-	// 		() => {
-	// 			setActionRequired(true);
-	// 		}
-	// 	);
+	const fetchSpectrumStatus = async () => {
+		try {
+			const res = await fetch("/api/SpectrumStatus");
+			const data = await res.json();
+			return data;
+		} catch (e) {
+			console.log(e);
+		}
+	};
 
-	// 	// Clean up the WebSocket connection when the component unmounts
-	// 	return () => {
-	// 		webSocketService.close();
-	// 	};
-	// }, [])
+	const handleNewDataRequest = async () => {
+		const data = await fetchSpectrumStatus();
+		setSpectrumStatus((prev) => [
+			...prev,
+			{
+				...data,
+				date: getTimeFormat(userLocale),
+			},
+		]);
+	};
 
-	return <>{spectrumStatus && spectrumStatus.statusMessage}</>;
+	const getSpectrumData = (key: string) => {
+		return spectrumStatus.map((data) => data[key]);
+	};
+
+	const dates = getSpectrumData("date");
+	const velocities = getSpectrumData("velocity");
+	const altitude = getSpectrumData("altitude");
+	const temperatures = getSpectrumData("temperature");
+
+	return (
+		<>
+			<h1>Line chart</h1>
+			<div style={{ display: "flex" }}>
+				<Line
+					datasetIdKey="velocity"
+					data={{
+						labels: [...dates],
+						datasets: [
+							{
+								label: "velocity",
+								data: [...velocities],
+								borderColor: "rgba(75,192,192,1)",
+							},
+						],
+					}}
+				/>
+				<Line
+					datasetIdKey="altitude"
+					data={{
+						labels: [...dates],
+						datasets: [
+							{
+								label: "altitude",
+								data: [...altitude],
+								borderColor: "#5000ff",
+							},
+						],
+					}}
+				/>
+				<Line
+					datasetIdKey="temperature"
+					data={{
+						labels: [...dates],
+						datasets: [
+							{
+								label: "temperature",
+								data: [...temperatures],
+								borderColor: "#00000",
+							},
+						],
+					}}
+				/>
+			</div>
+			{spectrumStatus.length !== 0 && (
+				<>
+					<div>
+						<p>
+							latest status message:{" "}
+							{spectrumStatus[spectrumStatus.length - 1].statusMessage}
+						</p>
+					</div>
+					<div>
+						<p>
+							Ascending or Descending:{" "}
+							{spectrumStatus[spectrumStatus.length - 1].isAscending
+								? "Ascending"
+								: "Descending"}
+						</p>
+					</div>
+					<div>
+						<p>
+							Action required:{" "}
+							{spectrumStatus[spectrumStatus.length - 1].isActionRequired
+								? "yes"
+								: "no"}
+						</p>
+					</div>
+				</>
+			)}
+			<button onClick={handleNewDataRequest}>add new data</button>
+		</>
+	);
 }
