@@ -17,3 +17,8 @@ export type SpectrumWS = {
 	IsActionRequired: boolean;
 	date: Date;
 };
+
+export type ActionHistory = {
+  id: number;
+  action: string;
+}
