@@ -7,6 +7,7 @@ import { Line } from "react-chartjs-2";
 import { Chart, registerables } from "chart.js";
 import getTimeFormat from "@app/utils/getTimeFormat";
 import Button from "@app/components/Button";
+import Blink from "@app/components/Blink";
 
 Chart.register(...registerables);
 
@@ -19,6 +20,7 @@ function AssignmentB() {
 	const [isActionRequired, setIsActionRequired] = useState(false);
 	const [hasRegisteredAction, setHasRegisteredAction] = useState(false);
 	const [actionHistory, setActionHistory] = useState<ActionHistory[]>([]);
+	const [shouldBlink, setShouldBlink] = useState(true);
 
 	const handleDataUpdate = (data: SpectrumWS) => {
 		setLiveSpectrumData((prev) => [
@@ -65,7 +67,6 @@ function AssignmentB() {
 				onData={handleDataUpdate}
 				onOpen={() => setConnected(true)}
 				onClose={() => setConnected(false)}
-				// onActionRequired={handleActionRequired}
 			/>
 			<ConnectionText $connected={connected}>
 				{connected ? "Connected" : "Connection lost, reconnecting..."}
@@ -132,34 +133,35 @@ function AssignmentB() {
 							</P>
 							<P>
 								Action required:{" "}
-								<Span>
-									{liveSpectrumData[liveSpectrumData.length - 1]
-										.IsActionRequired
-										? "yes"
-										: "no"}
-								</Span>
+								{liveSpectrumData[liveSpectrumData.length - 1].IsActionRequired
+									? "yes"
+									: "no"}
 							</P>
 							{actionHistory.length !== 0 && (
-								<div>
+								<Blink
+									shouldBlink={shouldBlink}
+									delay={500}
+									style={{
+										padding: "20px 20%",
+										borderRadius: "8px",
+										border: "2px solid red",
+									}}
+								>
 									<h2>Actions required!</h2>
 									{actionHistory.map((action, i) => (
-										<div
-											key={action.id}
-											style={{
-												display: "flex",
-												alignItems: "center",
-												justifyContent: "space-between",
-											}}
-										>
+										<Action key={action.id}>
 											<p>
 												{i + 1}) action {action.id}
 											</p>
-											<Button onClick={() => handleActionRequired(action.id)}>
+											<Button
+												onClick={() => handleActionRequired(action.id)}
+												style={{ border: "1px solid red" }}
+											>
 												Take action!
 											</Button>
-										</div>
+										</Action>
 									))}
-								</div>
+								</Blink>
 							)}
 						</div>
 					)}
@@ -187,13 +189,15 @@ export const P = styled.p`
 	margin: 10px 0;
 `;
 
-export const Span = styled.span`
-	padding: 8px;
-	background-color: red;
-	color: white;
-`;
-
 export const ConnectionText = styled.h1<{ $connected: boolean }>`
 	color: ${(props) => (props.$connected ? "green" : "red")};
 	margin: 10px 0;
+`;
+
+export const Action = styled.div`
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	margin-bottom: 6px;
 `;
