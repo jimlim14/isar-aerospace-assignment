@@ -63,7 +63,7 @@ export default function Home() {
 	};
 
 	const getSpectrumData = (key: string) => {
-		return spectrumStatus.map((data) => data[key]);
+		return spectrumStatus.map((data) => data[key as keyof SpectrumStatus]);
 	};
 
 	const dates = getSpectrumData("date");

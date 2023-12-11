@@ -5,7 +5,7 @@ export type SpectrumStatus = {
 	statusMessage: string;
 	isAscending: boolean;
 	isActionRequired: boolean;
-  date: Date;
+	date: string;
 };
 
 export type SpectrumWS = {
@@ -15,10 +15,10 @@ export type SpectrumWS = {
 	StatusMessage: string;
 	IsAscending: boolean;
 	IsActionRequired: boolean;
-	date: Date;
+	date: string;
 };
 
 export type ActionHistory = {
-  id: number;
-  action: string;
-}
+	id: number;
+	action: string;
+};

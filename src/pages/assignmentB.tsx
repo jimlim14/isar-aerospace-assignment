@@ -66,7 +66,7 @@ function AssignmentB() {
 	};
 
 	const getSpectrumData = (key: string) => {
-		return liveSpectrumData.map((data) => data[key]);
+		return liveSpectrumData.map((data) => data[key as keyof SpectrumWS]);
 	};
 
 	const dates = getSpectrumData("date");
