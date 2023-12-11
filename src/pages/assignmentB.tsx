@@ -1,6 +1,6 @@
 import WebSocketComponent from "@app/components/WebSocketComponent";
 import { ActionHistory, SpectrumWS } from "@app/types/types";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import useDetectUserLocale from "@app/hooks/useUserLocale";
 import styled from "styled-components";
 import { Line } from "react-chartjs-2";
@@ -18,30 +18,24 @@ function AssignmentB() {
 	const userLocale = useDetectUserLocale();
 	const [liveSpectrumData, setLiveSpectrumData] = useState<SpectrumWS[]>([]);
 	const [connected, setConnected] = useState(false);
-	const [isActionRequired, setIsActionRequired] = useState(false);
-	const [hasRegisteredAction, setHasRegisteredAction] = useState(false);
+	const hasRegisteredAction = useRef(false);
 	const [actionHistory, setActionHistory] = useState<ActionHistory[]>([]);
 	const [shouldBlink, setShouldBlink] = useState(true);
 
 	const handleDataUpdate = (data: SpectrumWS) => {
-		setLiveSpectrumData((prev) => [
-			...prev,
-			{ ...data, date: getTimeFormat(userLocale) },
-		]);
+		setLiveSpectrumData((prev) => {
+			return [...prev, { ...data, date: getTimeFormat(userLocale) }];
+		});
 
-		// add requested action from Spectrum
-		if (data.IsActionRequired !== isActionRequired) {
-			setIsActionRequired(data.IsActionRequired);
-
-			if (data.IsActionRequired && !hasRegisteredAction) {
-				setActionHistory((prevHistory) => [
-					...prevHistory,
-					{ id: Date.now(), action: "random action" },
-				]);
-				setHasRegisteredAction(true);
-			} else if (!data.IsActionRequired) {
-				setHasRegisteredAction(false);
-			}
+		// // add requested action from Spectrum
+		if (data.IsActionRequired && !hasRegisteredAction.current) {
+			setActionHistory((prevHistory) => [
+				...prevHistory,
+				{ id: Date.now(), action: "random action" },
+			]);
+			hasRegisteredAction.current = true;
+		} else if (!data.IsActionRequired) {
+			hasRegisteredAction.current = false;
 		}
 	};
 
