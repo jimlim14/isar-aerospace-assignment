@@ -11,9 +11,10 @@ import Blink from "@app/components/Blink";
 
 Chart.register(...registerables);
 
-const actions = ["eject immediately", "whatsap", "hello"];
-
 function AssignmentB() {
+	const [actOnSpectrumApi, setActOnSpectrumApi] = useState(
+		process.env.NEXT_PUBLIC_ACTONSPECTRUM_API
+	);
 	const userLocale = useDetectUserLocale();
 	const [liveSpectrumData, setLiveSpectrumData] = useState<SpectrumWS[]>([]);
 	const [connected, setConnected] = useState(false);
@@ -44,8 +45,21 @@ function AssignmentB() {
 		}
 	};
 
-	const handleActionRequired = (actionId: number) => {
+	const handleActionRequired = async (actionId: number) => {
 		// Handle action required
+		try {
+			if (!actOnSpectrumApi) {
+				throw new Error("ACTONSPECTRUM_API environment variable is not set.");
+			}
+			const res = await fetch(actOnSpectrumApi, {
+				method: "GET", // should be POST method in my opinion, even though its not allowed.
+			});
+			const data = await res.text(); // got back empty string
+		} catch (e) {
+			console.error("Error fetching data:", e);
+		}
+
+		// assume action has been taken care of, hence delete action
 		setActionHistory((prevActionHistory) =>
 			prevActionHistory.filter((prevAction) => prevAction.id !== actionId)
 		);
