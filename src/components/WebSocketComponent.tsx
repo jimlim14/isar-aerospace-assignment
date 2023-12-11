@@ -1,5 +1,5 @@
 import { SpectrumWS } from "@app/types/types";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 
 type Props = {
 	onData: (data: SpectrumWS) => void;
@@ -7,18 +7,14 @@ type Props = {
 	onClose: () => void;
 };
 
-function WebSocketComponent({
-	onData,
-	onOpen,
-	onClose,
-}: Props) {
-	const spectrumWSApi = process.env.NEXT_PUBLIC_SPECTRUM_WS_API;
-	const [socket, setSocket] = useState<WebSocket | null>(null);
+function WebSocketComponent({ onData, onOpen, onClose }: Props) {
+	const [spectrumWSApi, setSpectrumWSApi] = useState(
+		process.env.NEXT_PUBLIC_SPECTRUM_WS_API
+	);
 	const clientRef = useRef<WebSocket | null>(null);
 	const [waitingToReconnect, setWaitingToReconnect] = useState<boolean | null>(
 		null
 	);
-	const [isOpen, setIsOpen] = useState(false);
 
 	useEffect(() => {
 		if (waitingToReconnect) {
@@ -80,7 +76,7 @@ function WebSocketComponent({
 				client.close();
 			};
 		}
-	}, [onClose, onData, onOpen, spectrumWSApi, waitingToReconnect]);
+	}, [waitingToReconnect]);
 
 	return null;
 }
