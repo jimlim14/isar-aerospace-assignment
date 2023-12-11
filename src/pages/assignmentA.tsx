@@ -12,16 +12,24 @@ Chart.register(...registerables);
 export default function Home() {
 	const userLocale = useDetectUserLocale();
 	const [spectrumStatus, setSpectrumStatus] = useState<SpectrumStatus[]>([]);
+	const [errorMessage, setErrorMessage] = useState<{ error: string } | null>(
+		null
+	);
 
 	useEffect(() => {
 		const fetchData = async () => {
-			const spectrumData = await fetchSpectrumStatus();
-			setSpectrumStatus(() => [
-				{
-					...spectrumData,
-					date: getTimeFormat(userLocale),
-				},
-			]);
+			const data = await fetchSpectrumStatus();
+			if (data.error) {
+				setErrorMessage(data);
+			} else {
+				setSpectrumStatus(() => [
+					{
+						...data,
+						date: getTimeFormat(userLocale),
+					},
+				]);
+				setErrorMessage(null);
+			}
 		};
 
 		fetchData();
@@ -32,20 +40,26 @@ export default function Home() {
 			const res = await fetch("/api/SpectrumStatus");
 			const data = await res.json();
 			return data;
-		} catch (e) {
-			console.log(e);
+		} catch (e: any) {
+			console.error(e);
+			return { error: `client error: ${e.message}` };
 		}
 	};
 
 	const handleNewDataRequest = async () => {
 		const data = await fetchSpectrumStatus();
-		setSpectrumStatus((prev) => [
-			...prev,
-			{
-				...data,
-				date: getTimeFormat(userLocale),
-			},
-		]);
+		if (data.error) {
+			setErrorMessage(data);
+		} else {
+			setSpectrumStatus((prev) => [
+				...prev,
+				{
+					...data,
+					date: getTimeFormat(userLocale),
+				},
+			]);
+			setErrorMessage(null);
+		}
 	};
 
 	const getSpectrumData = (key: string) => {
@@ -107,7 +121,7 @@ export default function Home() {
 					/>
 				</FlexItem>
 				{spectrumStatus.length !== 0 && (
-					<div style={{padding: "20px"}}>
+					<div style={{ padding: "20px" }}>
 						<h3>Other information</h3>
 						<P>
 							latest status message:{" "}
@@ -126,6 +140,11 @@ export default function Home() {
 								: "no"}
 						</P>
 						<Button onClick={handleNewDataRequest}>add new data</Button>
+						{errorMessage && (
+							<P style={{ color: "red" }}>
+								{errorMessage.error}, please try again later.
+							</P>
+						)}
 					</div>
 				)}
 			</FlexContainer>
