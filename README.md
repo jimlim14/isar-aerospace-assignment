@@ -5,6 +5,8 @@ This is Isar-Aerospace technical assignment built with [Next.js](https://nextjs.
 First, run the code below:
 
 ```bash
+git clone https://github.com/jimlim14/isar-aerospace-assignment.git
+
 cd isar-aerospace-assignment
 
 npm install
