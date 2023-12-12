@@ -74,3 +74,8 @@ Please comment on potential improvements of the API structure, deviations from c
 4. *3rd API error 405:*
 - One was asked to provide the option for user to act on Spectrum using ActOcSpectrum API endpoint which leads to my assumption that it should be POST (405: method not allowed) request rather than a GET that returns an empty string. In a typical RESTful API design, a GET request is used to retrieve information from the server, and a POST request is used to submit data to be processed to a specified resource.
 - In this case, the operation involves taking action on the server when the `isActionRequired` flag is true. Based on RESTful principles, performing an action on the server, especially one that might have side effects like updating the server state, is typically done using a POST request. This aligns with the idea that a POST request is used for operations that are not idempotent and may change the state of the server.
+
+# Assumption
+
+- No fancy responsiveness because a crew that usually do the monitoring has multiple high resolution monitors with full size app in each of them, and no fancy design because information needs to be shown clean and clear.
+- This is a technical assignment that tests applicants all-around skills which is why I reused the UI from Assignment A at Assignment B, and with the 500ms change on `StatusMessage`, `IsAscending`, and `IsActionRequired`, only the latest one is displayed. Something I would do differently is to display every data sent back from server with different timestamp just like the line charts on Assignment B. 
